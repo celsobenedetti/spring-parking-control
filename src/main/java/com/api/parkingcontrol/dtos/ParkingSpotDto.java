@@ -1,7 +1,5 @@
 package com.api.parkingcontrol.dtos;
 
-import java.time.LocalDateTime;
-
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
@@ -29,12 +27,8 @@ public class ParkingSpotDto {
     private String carColor;
 
     @NotBlank
-    private LocalDateTime registrationDate;
-
-    @NotBlank
     private String responsibleName;
 
     @NotBlank
     private String block;
-
 }

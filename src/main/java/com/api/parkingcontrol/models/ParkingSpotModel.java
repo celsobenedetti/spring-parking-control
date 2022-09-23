@@ -37,7 +37,7 @@ public class ParkingSpotModel implements Serializable {
     @Column(nullable = false, length = 70, name = "car_model")
     private String carModel;
 
-    @Column(nullable = false, length = 70, name = "parking_spot_number")
+    @Column(nullable = false, length = 70, name = "car_color")
     private String carColor;
 
     @Column(nullable = false, name = "registration_datec")
