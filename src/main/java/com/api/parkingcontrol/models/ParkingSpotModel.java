@@ -46,6 +46,6 @@ public class ParkingSpotModel implements Serializable {
     @Column(nullable = false, length = 130, name = "responsible_name")
     private String responsibleName;
 
-    @Column(nullable = false, unique = true, length = 30)
+    @Column(nullable = false, length = 30)
     private String block;
 }

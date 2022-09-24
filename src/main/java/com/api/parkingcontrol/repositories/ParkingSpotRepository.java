@@ -9,7 +9,7 @@ import com.api.parkingcontrol.models.ParkingSpotModel;
 
 @Repository
 public interface ParkingSpotRepository extends JpaRepository<ParkingSpotModel, UUID> {
-    ParkingSpotModel findByLicencePlateCar(String licencePlateCar);
+    ParkingSpotModel findByLicensePlateCar(String licencePlateCar);
 
     ParkingSpotModel findByParkingSpotNumber(String parkingSpotNumber);
 }

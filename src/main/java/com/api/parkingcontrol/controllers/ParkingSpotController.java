@@ -26,8 +26,9 @@ public class ParkingSpotController {
 
     @PostMapping
     public ResponseEntity<Object> saveParkingSpot(@RequestBody @Valid ParkingSpotDto parkingSpotDto) {
-        if (parkingSpotService.isSpotRegistered(parkingSpotDto)) {
-            return new ResponseEntity<>("The car is already parked", HttpStatus.BAD_REQUEST);
+        var message = parkingSpotService.checkSpotRegistered(parkingSpotDto);
+        if (message != "") {
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(parkingSpotService.save(parkingSpotDto));

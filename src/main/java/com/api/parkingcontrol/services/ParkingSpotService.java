@@ -28,9 +28,14 @@ public class ParkingSpotService {
         return parkingSpotRepository.save(parkingSpotModel);
     }
 
-    public Boolean isSpotRegistered(ParkingSpotDto parkingSpotDto) {
-        return parkingSpotRepository.findByLicencePlateCar(parkingSpotDto.getLicensePlateCar()) != null
-                && parkingSpotRepository.findByParkingSpotNumber(parkingSpotDto.getParkingSpotNumber()) != null;
+    public String checkSpotRegistered(ParkingSpotDto parkingSpotDto) {
+        System.out.println(parkingSpotDto.getParkingSpotNumber());
+        if (parkingSpotRepository.findByLicensePlateCar(parkingSpotDto.getLicensePlateCar()) != null)
+            return "The car is already parked";
+        if (parkingSpotRepository.findByParkingSpotNumber(parkingSpotDto.getParkingSpotNumber()) != null)
+            return "The spot is already taken";
+
+        return "";
     }
 
 }

@@ -1,0 +1,12 @@
+POST http://localhost:8080/parking-spot
+Content-Type: application/json
+
+{
+    "parkingSpotNumber": "A14",
+    "licensePlateCar": "1234568",
+    "carBrand": "Honda",
+    "carModel": "Civic",
+    "carColor": "Black",
+    "responsibleName": "John Doe",
+    "block": "A"
+}
