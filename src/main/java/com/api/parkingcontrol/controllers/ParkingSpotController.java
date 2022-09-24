@@ -28,7 +28,7 @@ public class ParkingSpotController {
     public ResponseEntity<Object> saveParkingSpot(@RequestBody @Valid ParkingSpotDto parkingSpotDto) {
         var message = parkingSpotService.checkSpotRegistered(parkingSpotDto);
         if (message != "") {
-            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(message, HttpStatus.CONFLICT);
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(parkingSpotService.save(parkingSpotDto));
