@@ -1,13 +1,14 @@
 # spring-parking-control
 
-Pratica de Spring Boot desenvolvida a partir [desse tutorial](https://www.youtube.com/watch?v=LXRU-Z36GEU&t=3325s) da mestre [Micheli Brito](https://www.michellibrito.com/)
+Pratica de Spring Boot desenvolvida a partir [desse tutorial](https://www.youtube.com/watch?v=LXRU-Z36GEU) da mestre [Micheli Brito](https://www.michellibrito.com/)
 
 ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?logo=spring&logoColor=white&style=for-the-badge)
+![Gradle](https://img.shields.io/badge/gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white)
 ![Postgres](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 
 ## Para rodar:
 
-1. Instalar JDK
+1. Instalar JDK e Gradle
 2. Configurar variáveis do banco em `src/main/resources/application/application.properties`
 3. Rodar `./gradlew bootRun` na raiz do projeto
 
@@ -23,13 +24,18 @@ Pratica de Spring Boot desenvolvida a partir [desse tutorial](https://www.youtub
 8. [Controllers](#controllers)
 9. [Outros](#other)
 
+## Conceitos para estudar
+
+- Spring Web, Spring Data JPA, Spring Validation
+- Beans, Bean life cycle, Core Container
+
 ### <a name="intro"></a>Spring Boot intro
 
-O ecossistema Spring é um conjunto de ferramentas, frameworks e bibliotecas que facilitam o desenvolvimento de aplicações Java
+O ecossistema Spring é um conjunto de ferramentas, frameworks e bibliotecas para o desenvolvimento de aplicações Java
 
 Spring Boot é um framework que facilita a criação de aplicações Spring
 
-Ele tras varias configuracoes predefinidas e um servidor Tomcat imputido, trazendo assim uma aplicação pronta pra rodar
+Ele predefine uma serie de configuracoes, e contem um servidor Tomcat imbutido, trazendo assim uma API pronta pra rodar
 
 A [ documentacao oficial ](https://spring.io/guides/gs/spring-boot/) é otima
 
@@ -85,17 +91,6 @@ Modelos são classes Java que representam entidades e definem seu modelamente ao
 Eles podem ser definidos anotando classes com decoradores `@Entity` e `@Table(name = "table_name")` do pacote `javax.persistence`
 
 ```java
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
 @Entity
 @Table(name = "parking_spot")
 public class ParkingSpotModel implements Serializable {
@@ -126,13 +121,6 @@ A interface `JpaRepository` possui varios metodos de ORM, como `save`, `delete`,
 O repository não será instanciado manualmente, mas sim pelo framework, por injeção de dependência
 
 ```java
-import java.util.UUID;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import com.api.parkingcontrol.models.ParkingSpotModel;
-
 @Repository
 public interface ParkingSpotRepository extends JpaRepository<ParkingSpotModel, UUID> {
     //Metodos extras podem ser declarados, e estes podem ser invocados em instancias dessa interface
@@ -148,13 +136,6 @@ Services sao responsaveis por implementar as regras de negocio da aplicação
 No Spring, são classes anotadas com `@Service` com que podem ser `injetadas` em controllers e outros services
 
 ```java
-import javax.transaction.Transactional;
-
-import org.springframework.stereotype.Service;
-
-import com.api.parkingcontrol.models.ParkingSpotModel;
-import com.api.parkingcontrol.repositories.ParkingSpotRepository;
-
 @Service
 public class ParkingSpotService {
 
@@ -178,29 +159,11 @@ Podemos definir controllers anotando classes com o decorator `@RestController`
 
 Rotas e handlers podem ser definidos anotando os metodos dessa classe com `@GetMapping | @PostMapping ...`
 
-O corpo da requisição pode ser mapeado para um DTO com o decorator `@RequestBody`
+Podemos acessar propriedades do request como body, query, params com decorators `@RequestBody | @PathVariable ...`
 
 Por baixo dos panos o Spring faz o roteamendo utilizando um `Dispatcher Servlet`
 
 ```java
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-
-import javax.validation.Valid;
-
-import org.springframework.beans.BeanUtils;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.api.parkingcontrol.dtos.ParkingSpotDto;
-import com.api.parkingcontrol.models.ParkingSpotModel;
-import com.api.parkingcontrol.services.ParkingSpotService;
-
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RequestMapping("/parking-spot")
@@ -212,14 +175,56 @@ public class ParkingSpotController {
         this.parkingSpotService = parkingSpotService;
     }
 
-    @PostMapping
-    //@Valid valida o objeto recebido baseado no DTO, e retorna erro 400 caso nao seja valido
-    public ResponseEntity<Object> saveParkingSpot(@RequestBody @Valid ParkingSpotDto parkingSpotDto) {
-        var parkingSpotModel = new ParkingSpotModel();
-        BeanUtils.copyProperties(parkingSpotDto, parkingSpotModel);
-        parkingSpotModel.setRegistrationDate(LocalDateTime.now(ZoneId.of("UTC")));
-        return ResponseEntity.status(HttpStatus.CREATED).body(parkingSpotService.save(parkingSpotModel));
+    @GetMapping
+    public ResponseEntity<Page<ParkingSpotModel>> findAll(
+            @PageableDefault(page = 0, size = 10, sort = "id") Pageable pageable) {
+        return ResponseEntity.ok(parkingSpotService.findAll(pageable));
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Object> findOneById(@PathVariable(value = "id") UUID id) {
+        Optional<ParkingSpotModel> parkingSpotOptional = parkingSpotService.findOneById(id);
+        if (!parkingSpotOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Parking spot not found");
+        }
+        return ResponseEntity.ok(parkingSpotOptional.get());
+    }
+
+    @PostMapping
+    public ResponseEntity<Object> createParkingSpot(@RequestBody @Valid ParkingSpotDto parkingSpotDto) {
+        var message = parkingSpotService.checkSpotRegistered(parkingSpotDto);
+        if (message != "") {
+            return new ResponseEntity<>(message, HttpStatus.CONFLICT);
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(parkingSpotService.save(parkingSpotDto));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> deleteOne(@PathVariable(value = "id") UUID id) {
+        Optional<ParkingSpotModel> parkingSpotOptional = parkingSpotService.findOneById(id);
+
+        if (!parkingSpotOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Parking spot not found");
+        }
+
+        parkingSpotService.delete(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Parking spot delete successfully");
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Object> updateOne(@PathVariable(value = "id") UUID id,
+            @RequestBody ParkingSpotDto parkingSpotDto) {
+
+        Optional<ParkingSpotModel> parkingSpotOptional = parkingSpotService.findOneById(id);
+        if (!parkingSpotOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Parking spot not found");
+        }
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(parkingSpotService.updateOne(parkingSpotOptional.get(), parkingSpotDto));
+    }
+
 }
 ```
 
