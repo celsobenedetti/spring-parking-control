@@ -1,3 +1,8 @@
+GET http://localhost:8080/parking-spot
+GET http://localhost:8080/parking-spot/392be326-bf43-4862-9b13-128cf9dd295d
+
+DELETE http://localhost:8080/parking-spot/392be326-bf43-4862-9b13-128cf9dd295d
+
 POST http://localhost:8080/parking-spot
 Content-Type: application/json
 
@@ -6,6 +11,19 @@ Content-Type: application/json
     "licensePlateCar": "1234568",
     "carBrand": "Honda",
     "carModel": "Civic",
+    "carColor": "Black",
+    "responsibleName": "John Doe",
+    "block": "A"
+}
+
+PUT http://localhost:8080/parking-spot/392be326-bf43-4862-9b13-128cf9dd295d
+Content-Type: application/json
+
+{
+    "parkingSpotNumber": "A14",
+    "licensePlateCar": "1234568",
+    "carBrand": "Honda",
+    "carModel": "Civic 2",
     "carColor": "Black",
     "responsibleName": "John Doe",
     "block": "A"

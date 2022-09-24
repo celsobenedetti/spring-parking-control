@@ -2,10 +2,14 @@ package com.api.parkingcontrol.services;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Optional;
+import java.util.UUID;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.api.parkingcontrol.dtos.ParkingSpotDto;
@@ -36,6 +40,33 @@ public class ParkingSpotService {
             return "The spot is already taken";
 
         return "";
+    }
+
+    public Page<ParkingSpotModel> findAll(Pageable pageable) {
+        return parkingSpotRepository.findAll(pageable);
+    }
+
+    public Optional<ParkingSpotModel> findOneById(UUID id) {
+        return parkingSpotRepository.findById(id);
+    }
+
+    @Transactional
+    public void delete(UUID id) {
+        parkingSpotRepository.deleteById(id);
+    }
+
+    @Transactional
+    public ParkingSpotModel updateOne(ParkingSpotModel parkingSpotModel,
+            ParkingSpotDto parkingSpotDto) {
+        parkingSpotModel.setBlock(parkingSpotDto.getBlock());
+        parkingSpotModel.setParkingSpotNumber(parkingSpotDto.getParkingSpotNumber());
+        parkingSpotModel.setLicensePlateCar(parkingSpotDto.getLicensePlateCar());
+        parkingSpotModel.setCarBrand(parkingSpotDto.getCarBrand());
+        parkingSpotModel.setCarColor(parkingSpotDto.getCarColor());
+        parkingSpotModel.setCarModel(parkingSpotDto.getCarModel());
+        parkingSpotModel.setResponsibleName(parkingSpotDto.getResponsibleName());
+
+        return parkingSpotRepository.save(parkingSpotModel);
     }
 
 }
